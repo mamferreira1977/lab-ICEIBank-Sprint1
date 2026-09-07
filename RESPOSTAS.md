@@ -54,19 +54,19 @@ Quem obtiver a chave secreta poderá assinar tokens que serão aceitos como vál
 
 ---
 
-# Parte G — Frontend
+# 12.3 Parte G
 
-## 1. Como o frontend lembra de reenviar o token?
+## 1.Como o frontend “lembra” de reenviar o token em cada requisição depois do login? Descreva, em alto nível, o mecanismo que você implementou.
 
 Depois do login, o frontend salva o JWT no `localStorage` com a chave `iceibank.jwt`. A função central de requisição lê esse valor e, nas chamadas protegidas, adiciona automaticamente o cabeçalho `Authorization: Bearer <token>`. Assim, as funções de consultar, depositar, sacar, criar conta, transferir e consultar status reutilizam o mesmo mecanismo.
 
-## 2. O que acontece se o token expirar durante uma operação?
+## Se o token expirar enquanto alguém está usando o frontend no meio de uma operação, o que acontece na sua implementação? A interface avisa a pessoa usuária, ou ela só vê um erro genérico?
 
-A API responde HTTP 401. O frontend detecta esse status, remove o token expirado do `localStorage`, atualiza a indicação de autenticação e exibe uma mensagem na própria tela informando que a sessão expirou ou que o token é inválido e que é necessário fazer login novamente. Portanto, o erro não fica restrito ao console do navegador.
+A API responde HTTP 401. O frontend detecta esse status, remove o token expirado do `localStorage`, atualiza a indicação de autenticação e exibe uma mensagem na própria tela informando que a sessão expirou ou que o token é inválido e que é necessário fazer login novamente.
 
-## 3. Onde estão M, V e C no frontend?
+## 3. Esta unidade da disciplina trata de arquitetura MVC. No seu frontend, onde fica o “M” (Model), o “V” (View) e o “C” (Controller)? Eles existem de forma clara na sua implementação, ou o código ficou mais misturado do que o padrão sugere?
 
-No frontend simples deste Sprint, a separação MVC não é tão rígida quanto no backend. A **View** está principalmente no `index.html` e no `styles.css`. O papel de **Controller** aparece nas funções de `app.js` que respondem às ações do usuário, chamam a API e atualizam a tela. O **Model** é leve e aparece nos objetos JavaScript utilizados para representar os dados recebidos/enviados e no estado do token armazenado no navegador. Como foi escolhido JavaScript puro para manter o frontend pequeno, essas responsabilidades ficam menos isoladas do que em um framework com estrutura própria de componentes/estado.
+No frontend simples deste Sprint, a separação MVC não é tão rígida quanto no backend. A **View** está principalmente no `index.html` e no `styles.css`. O papel de **Controller** aparece nas funções de `app.js` que respondem às ações do usuário, chamam a API e atualizam a tela. O **Model**  aparece nos objetos JavaScript utilizados para representar os dados recebidos/enviados e no estado do token armazenado no navegador. 
 
 ## Funcionalidade adicional — Histórico de transações por conta
 Foi implementado o endpoint `GET /contas/{id}/historico`. Ele retorna os eventos relacionados à conta consultada, incluindo criação, depósito, saque e transferências nas quais a conta aparece como origem ou destino. Os eventos são lidos do arquivo `eventos-agencia-X.jsonl` da agência responsável e ordenados pelo `timestampLamport`. Escolhi essa funcionalidade porque acrescenta comportamento observável ao ICEIBank e facilita a conferência das operações e do relógio lógico de Lamport.
