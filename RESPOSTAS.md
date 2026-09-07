@@ -10,19 +10,19 @@ O novo valor é **11**. Isso mostra que uma agência que já processou muitos ev
 
 ---
 
-# Parte D — Transferências
+# 8.3 Parte D 
 
-## 1. Por que a transferência local não usa aoEnviar()/aoReceber()?
+## 1. No trecho agenciaDestino === idAgencia, por que a transferência local não precisa da lógica de aoEnviar()/aoReceber() do relógio de Lamport, enquanto a transferência entre agências precisa?
 
-Na transferência local, débito e crédito acontecem dentro do mesmo processo da mesma agência. Não existe mensagem atravessando a fronteira entre dois processos distribuídos. Assim, cada operação é apenas um evento local e usa `eventoLocal()`. Já na transferência entre agências existe comunicação entre processos diferentes: a origem executa `aoEnviar()` e envia o timestamp; o destino executa `aoReceber(timestampRecebido)`, aplicando a terceira regra do relógio de Lamport.
+Na transferência local, débito e crédito acontecem dentro do mesmo processo da mesma agência.Cada operação é apenas um evento local e usa `eventoLocal()`. Já na transferência entre agências existe comunicação entre processos diferentes: a origem executa `aoEnviar()` e envia o timestamp; o destino executa `aoReceber(timestampRecebido)`. 
 
-## 2. Na falha conhecida, o saldo da origem é revertido?
+## 2. Reproduza a falha conhecida (tarefa 5) e observe o saldo da conta de origem depois do erro. Ele foi revertido? O que isso significa em termos de consistência do sistema bancário?
 
-Não. Na implementação do Sprint 1, o débito ocorre antes da chamada REST à agência de destino. Se a agência de destino estiver indisponível, o sistema registra `TRANSFERENCIA_FALHOU` e retorna HTTP 502, mas o valor debitado não é devolvido automaticamente à conta de origem. Isso significa que a operação distribuída não é atômica e o sistema pode ficar temporariamente inconsistente: a origem perdeu saldo, mas o destino não recebeu o crédito.
+Não. Na implementação do Sprint 1, o débito ocorre antes da chamada REST à agência de destino. Se a agência de destino estiver indisponível, o sistema registra `TRANSFERENCIA_FALHOU` e retorna HTTP 502, mas o valor debitado não é devolvido automaticamente à conta de origem. Isso significa que o sistema pode ficar temporariamente inconsistente: a origem perdeu saldo, mas o destino não recebeu o crédito.
 
-## 3. Duas formas de corrigir no Sprint 4
+## 3. Pensando à frente para o Sprint 4: cite, em alto nível, duas formas possíveis de corrigir esse problema (não precisa implementar agora, só descrever a ideia).
 
-Uma possibilidade é usar **Two-Phase Commit (2PC)**, coordenando as agências em uma fase de preparação e outra de confirmação, de modo que a operação só seja confirmada quando todos os participantes estiverem aptos a concluí-la. Outra possibilidade é usar uma **Saga**, dividindo a transferência em etapas e definindo uma ação compensatória; se o crédito remoto falhar depois do débito, uma compensação pode devolver o valor à conta de origem.
+Uma possibilidade é usar uma **Saga**, dividindo a transferência em etapas e definindo uma ação compensatória; se o crédito remoto falhar depois do débito, uma compensação pode devolver o valor à conta de origem.
 
 ---
 
