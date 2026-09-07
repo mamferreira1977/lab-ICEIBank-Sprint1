@@ -1,0 +1,12 @@
+# Java / Maven
+agencia/target/
+*.class
+.idea/
+*.iml
+
+# Logs gerados em tempo de execução
+agencia/data/*.jsonl
+
+# Sistema
+Thumbs.db
+desktop.ini

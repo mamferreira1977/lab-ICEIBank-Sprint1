@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICEIBank</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<section id="authLanding" class="auth-landing">
+  <div class="auth-landing-card">
+    <div class="auth-bank-logo">IB</div>
+    <h1>ICEIBank</h1>
+
+    <div id="registerPanel">
+      <h2>Cadastro do usuário</h2>
+      <form id="registerForm" class="auth-form">
+        <label>Nome completo<input id="cadastroNome" autocomplete="name" required placeholder="Nome do correntista"></label>
+        <label>Usuário<input id="cadastroUsuario" autocomplete="username" minlength="3" required placeholder="Escolha um usuário"></label>
+        <label>Senha<input id="cadastroSenha" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo de 6 caracteres"></label>
+        <label>Confirmar senha<input id="cadastroConfirmarSenha" type="password" autocomplete="new-password" minlength="6" required placeholder="Repita a senha"></label>
+        <button class="btn btn-primary btn-block" type="submit">Cadastrar e entrar</button>
+      </form>
+      <button id="showExistingLogin" class="auth-text-button" type="button">Já possuo cadastro</button>
+    </div>
+
+    <div id="loginPanel" class="hidden">
+      <h2>Entrar</h2>
+      <form id="loginForm" class="auth-form">
+        <label>Usuário<input id="usuario" autocomplete="username" required placeholder="Seu usuário"></label>
+        <label>Senha<input id="senha" type="password" autocomplete="current-password" required placeholder="Sua senha"></label>
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+      </form>
+      <button id="showRegistration" class="auth-text-button" type="button">Criar novo cadastro</button>
+    </div>
+  </div>
+</section>
+
+<div id="appShell" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">IB</div><div><strong>ICEIBank</strong></div></div>
+    <div class="agency-box">
+      <span class="eyebrow">AGÊNCIA DE ENTRADA</span>
+      <select id="agencia" aria-label="Agência de entrada">
+        <option value="0">Agência 0</option>
+        <option value="1">Agência 1</option>
+        <option value="2">Agência 2</option>
+      </select>
+    </div>
+    <nav class="nav-menu" aria-label="Navegação principal">
+      <button class="nav-item active" data-target="contas"><span>▣</span> Contas</button>
+      <button class="nav-item" data-target="movimentacoes"><span>↕</span> Movimentações</button>
+      <button class="nav-item" data-target="transferencias"><span>⇄</span> Transferências</button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div><span class="eyebrow">ICEIBANK</span><h1 id="pageTitle">Contas</h1></div>
+      <div class="topbar-actions">
+        <div class="session-status authenticated" id="sessionStatus"><span class="status-dot"></span><span>JWT ativo</span></div>
+        <button id="logoutBtn" class="btn btn-ghost" type="button">Sair</button>
+      </div>
+    </header>
+
+    <section id="contas" class="view active-view">
+      <div class="section-intro"><div><h2>Cadastro e consulta</h2></div></div>
+      <div class="form-grid two-cols">
+        <form id="createAccountForm" class="panel form-card">
+          <div class="panel-header"><div><h3>Criar nova conta</h3></div></div>
+          <label>ID da conta<input id="criarId" type="number" min="0" required placeholder="Ex.: 0"></label>
+          <div id="partitionPreview" class="partition-preview">Informe um ID para visualizar a agência responsável.</div>
+          <label>Nome do usuário<input id="criarNome" required placeholder="Nome do usuário"></label>
+          <label>Saldo inicial<div class="money-input"><span>R$</span><input id="criarSaldo" type="number" min="0" step="0.01" value="0"></div></label>
+          <button class="btn btn-primary btn-block" type="submit">Criar conta</button>
+        </form>
+
+        <form id="balanceForm" class="panel form-card">
+          <div class="panel-header"><div><h3>Consultar conta</h3></div></div>
+          <label>ID da conta<input id="saldoId" type="number" min="0" required placeholder="Ex.: 0"></label>
+          <button class="btn btn-secondary btn-block" type="submit">Consultar saldo</button>
+          <div id="accountResult" class="account-result empty">
+            <div class="account-avatar">$</div>
+            <div><small>Resultado da consulta</small><strong>—</strong><span>Informe uma conta</span></div>
+          </div>
+        </form>
+      </div>
+
+      <article class="panel history-card">
+        <div class="panel-header"><div><h3>Histórico de transações por conta</h3></div></div>
+        <form id="historyForm" class="history-search">
+          <label>ID da conta<input id="historicoId" type="number" min="0" required placeholder="Ex.: 0"></label>
+          <button class="btn btn-secondary" type="submit">Consultar histórico</button>
+        </form>
+        <div id="historyEmpty" class="history-empty">Informe uma conta para consultar suas transações.</div>
+        <div class="history-table-wrap hidden" id="historyTableWrap">
+          <table class="history-table">
+            <thead><tr><th>Lamport</th><th>Operação</th><th>Data/hora</th><th>Detalhes</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section id="movimentacoes" class="view">
+      <div class="section-intro"><div><h2>Depósito e saque</h2></div></div>
+      <div class="form-grid two-cols">
+        <form id="depositForm" class="panel form-card accent-green">
+          <div class="operation-icon">↓</div><h3>Depositar</h3><p>Crédito local na conta selecionada.</p>
+          <label>ID da conta<input id="depositId" type="number" min="0" required></label>
+          <label>Valor<div class="money-input"><span>R$</span><input id="depositValue" type="number" min="0.01" step="0.01" required></div></label>
+          <button class="btn btn-success btn-block" type="submit">Confirmar depósito</button>
+        </form>
+        <form id="withdrawForm" class="panel form-card accent-orange">
+          <div class="operation-icon">↑</div><h3>Sacar</h3><p>Débito local com validação de saldo.</p>
+          <label>ID da conta<input id="withdrawId" type="number" min="0" required></label>
+          <label>Valor<div class="money-input"><span>R$</span><input id="withdrawValue" type="number" min="0.01" step="0.01" required></div></label>
+          <button class="btn btn-warning btn-block" type="submit">Confirmar saque</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="transferencias" class="view">
+      <div class="section-intro"><div><h2>Transferências</h2></div></div>
+      <form id="transferForm" class="panel form-card transfer-card single-transfer-card">
+        <div class="panel-header"><div><h3>Nova transferência</h3></div></div>
+        <div class="transfer-accounts">
+          <label>Conta de origem<input id="origem" type="number" min="0" required placeholder="Ex.: 0"></label>
+          <span class="transfer-arrow">→</span>
+          <label>Conta de destino<input id="destino" type="number" min="0" required placeholder="Ex.: 1"></label>
+        </div>
+        <label>Valor da transferência<div class="money-input large"><span>R$</span><input id="transfValor" type="number" min="0.01" step="0.01" required placeholder="0,00"></div></label>
+        <button class="btn btn-primary btn-block" type="submit">Transferir</button>
+      </form>
+    </section>
+
+    <article class="panel result-panel">
+      <div class="panel-header"><div><span class="eyebrow">RETORNO DA API</span><h3>Última resposta</h3></div><span id="httpBadge" class="http-badge neutral">Aguardando</span></div>
+      <pre id="resultado">Pronto para operar.</pre>
+    </article>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

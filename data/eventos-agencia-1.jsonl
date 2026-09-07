@@ -1,0 +1,4 @@
+{"agencia":"agencia-1","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-07T14:14:22.501316100Z","detalhes":{"saldoInicial":200,"id":1,"nomeUsuario":"Sandra"}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":2,"horaParede":"2026-09-07T14:15:10.245393200Z","detalhes":{"idOrigem":1,"idDestino":0,"valor":50}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":4,"horaParede":"2026-09-07T14:20:08.921919300Z","detalhes":{"idOrigem":1,"idDestino":2,"valor":50}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_FALHOU","timestampLamport":6,"horaParede":"2026-09-07T14:20:08.948573300Z","detalhes":{"erro":"Agência destino respondeu HTTP 404: {\"erro\":\"Conta não encontrada nesta agência.\"}","valor":50,"idDestino":2,"idOrigem":1}}
