@@ -38,25 +38,19 @@ Não. O relógio de Lamport não consegue, sozinho, distinguir em todos os casos
 
 ---
 
-# Parte F — Autenticação JWT
+# 11.3 Parte F 
 
-## Decisões de design
+## Qual a diferença entre autenticação e autorização? Sua implementação verifica só uma das duas, ou as duas? Por exemplo: um usuário autenticado consegue sacar de uma conta que não é dele, na sua implementação atual?
 
-A implementação possui um cadastro inicial em `POST /auth/cadastro`, com nome, usuário e senha. A senha é transformada em hash BCrypt e o cadastro é armazenado em `agencia/data/usuarios.jsonl`, compartilhado pelas três instâncias locais. Depois, `POST /auth/login` valida usuário e senha e emite um JWT. O token expira em 600 segundos por padrão, configurável por `JWT_EXPIRATION_SECONDS`, e as três agências usam a mesma `JWT_SECRET`. O cadastro não substitui a criação da conta bancária: primeiro é criado o usuário de acesso; após o login, a rota protegida `POST /contas` cria a conta bancária.
+Autenticação responde **quem é o usuário**; autorização responde **o que esse usuário pode fazer**. Esta implementação realiza autenticação via JWT, mas não implementa autorização por titularidade da conta.
 
-A rota interna `creditar-remoto` não usa o mesmo JWT do usuário do frontend. Ela exige o cabeçalho `X-Internal-Key`, compartilhado apenas entre as agências. A decisão separa autenticação de usuário de autenticação de comunicação interna serviço-a-serviço. Para um sistema real, essa chave deveria estar em um cofre de segredos e uma solução mais robusta poderia usar mTLS ou tokens de serviço com rotação.
+## Por que o servidor não precisa consultar um banco de dados para validar a assinatura de um JWT a cada requisição? O que isso implica sobre escalabilidade, comparado a guardar sessões em memória no servidor?
 
-## 1. Diferença entre autenticação e autorização. O projeto verifica as duas?
+O JWT é assinado. A agência consegue verificar a assinatura usando a chave secreta e também validar a expiração presente no próprio token. Assim, não é necessário consultar um banco de dados ou uma sessão central apenas para verificar a autenticidade do token em cada requisição.
 
-Autenticação responde **quem é o usuário**; autorização responde **o que esse usuário pode fazer**. Esta implementação realiza autenticação via JWT, mas não implementa autorização por titularidade da conta. Portanto, qualquer usuário que possua um JWT válido consegue operar qualquer conta disponível na agência, desde que respeite as demais regras do sistema. Em um sistema bancário real, isso seria insuficiente e seria necessário relacionar o usuário às contas e verificar permissões a cada operação.
+## O que aconteceria com a segurança do sistema se a chave secreta usada para assinar o JWT vazasse?
 
-## 2. Por que não consultar banco para validar o JWT? Efeito na escalabilidade
-
-O JWT é assinado. A agência consegue verificar a assinatura usando a chave secreta e também validar a expiração presente no próprio token. Assim, não é necessário consultar um banco de dados ou uma sessão central apenas para verificar a autenticidade do token em cada requisição. Isso reduz dependência de estado de sessão no servidor e facilita escalar horizontalmente várias instâncias. Sessões em memória exigem afinidade de sessão, replicação ou um armazenamento compartilhado para que todas as instâncias reconheçam o usuário.
-
-## 3. O que acontece se a chave secreta vazar?
-
-Quem obtiver a chave secreta poderá assinar tokens que serão aceitos como válidos pelas agências, permitindo falsificar identidades e contornar a autenticação. Nesse caso, a chave precisa ser revogada/trocada imediatamente e os tokens assinados com a chave comprometida devem deixar de ser aceitos. Em produção, segredos não devem ficar fixos no código-fonte.
+Quem obtiver a chave secreta poderá assinar tokens que serão aceitos como válidos pelas agências, permitindo falsificar identidades e contornar a autenticação.
 
 ---
 
