@@ -1,12 +1,12 @@
-# Parte B — Relógio de Lamport
+# 6.4 - Parte B — Relógio de Lamport
 
-## 1. Por que usar max(contador_local, timestampRecebido) + 1?
+## 1. Por que o relógio de Lamport usa max(contador_local, timestampRecebido) + 1 ao receber uma mensagem, em vez de simplesmente adotar o timestamp recebido diretamente?
 
-Ao receber uma mensagem, o processo precisa garantir que o evento de recebimento fique logicamente depois tanto dos eventos que ele próprio já processou quanto do evento de envio da mensagem recebida. Por isso, ele escolhe o maior valor entre o contador local e o timestamp recebido e soma 1. Se simplesmente copiasse o timestamp recebido, o relógio local poderia diminuir ou ficar igual ao evento remoto, violando a ordenação lógica necessária para representar a relação de causalidade.
+Ao receber uma mensagem, o processo precisa garantir que o evento de recebimento fique logicamente depois tanto dos eventos que ele próprio já processou quanto do evento de envio da mensagem recebida. Por isso, ele escolhe o maior valor entre o contador local e o timestamp recebido e soma 1.
 
-## 2. Agência 0 no contador 10 recebe timestamp 3. Qual o novo valor?
+## 2. Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timestamp 3 (de uma agência mais “atrasada”), qual o novo valor do contador da Agência 0? O que isso implica sobre agências que processam muitos eventos rapidamente versus agências mais lentas?
 
-O cálculo é `max(10, 3) + 1`, portanto o novo valor é **11**. Isso mostra que uma agência que já processou muitos eventos não volta no tempo lógico ao receber uma mensagem de uma agência com contador menor. Agências mais ativas podem ter contadores bem maiores que agências menos ativas; o valor de Lamport representa ordem lógica, e não tempo físico nem velocidade real de processamento.
+O novo valor é **11**. Isso mostra que uma agência que já processou muitos eventos não volta no tempo lógico ao receber uma mensagem de uma agência com contador menor. 
 
 ---
 
