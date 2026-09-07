@@ -26,19 +26,15 @@ Uma possibilidade é usar uma **Saga**, dividindo a transferência em etapas e d
 
 ---
 
-# Parte E — Linha do tempo unificada
+# 10.3 Parte E 
 
-## 1. O que significa ver timestamps diferentes sem saber se os eventos se influenciaram?
+## O relógio de Lamport garante que, se A aconteceu antes de B causalmente, timestamp(A) < timestamp(B). Ele não garante a volta. O que isso significa na prática quando você vê dois eventos com timestamps diferentes na linha do tempo, mas sem saber se um realmente influenciou o outro?
 
-Se sabemos que A aconteceu antes de B causalmente, o relógio de Lamport garante `L(A) < L(B)`. Porém, observar apenas `L(A) < L(B)` não permite concluir que A causou B. Dois eventos independentes podem receber valores diferentes apenas porque cada processo avançou seu contador de forma distinta. Portanto, a ordenação por Lamport fornece uma ordem lógica consistente, mas não prova causalidade no sentido inverso.
+Se sabemos que A aconteceu antes de B causalmente, o relógio de Lamport garante `L(A) < L(B)`. A ordenação por Lamport fornece uma ordem lógica consistente, mas não prova causalidade no sentido inverso.
 
-## 2. Lamport consegue distinguir com certeza concorrência de causalidade?
+## Baseado no que você observou no passo 3 da tarefa: o relógio de Lamport, sozinho, seria suficiente para um sistema que precisa distinguir com certeza “A e B são concorrentes” de “A aconteceu antes de B”? Por que isso motiva o relógio vetorial do Sprint 2?
 
 Não. O relógio de Lamport não consegue, sozinho, distinguir em todos os casos se dois eventos são concorrentes ou se existe uma relação causal entre eles. Essa limitação motiva o relógio vetorial: com vetores é possível comparar componentes e detectar quando dois eventos não são ordenáveis entre si, caracterizando concorrência.
-
-## Observação do teste
-
-Preencha este trecho depois de executar `MesclarLogs` e capturar a evidência real. Registre aqui quais dois eventos apresentaram o mesmo `timestampLamport`, de quais agências vieram, se eram independentes e como seus valores de `horaParede` se compararam.
 
 ---
 
