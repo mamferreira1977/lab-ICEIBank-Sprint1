@@ -49,7 +49,7 @@ public class HistoricoTransacoesService {
             throw new IllegalStateException("Falha ao consultar o histórico da conta " + idConta, e);
         }
 
-        resultado.sort(Comparator.comparingInt(Evento::timestampLamport));
+        resultado.sort(Comparator.comparing(Evento::horaParede));
         return resultado;
     }
 

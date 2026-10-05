@@ -12,13 +12,18 @@ import java.util.Map;
 
 @Service
 public class ContaService {
+
     private final ContaRepository contaRepository;
     private final AgenciaConfig config;
-    private final RelogioLamport relogio;
+    private final RelogioVetorial relogio;
     private final RegistroEventosAplicacao registro;
 
-    public ContaService(ContaRepository contaRepository, AgenciaConfig config,
-                        RelogioLamport relogio, RegistroEventosAplicacao registro) {
+    public ContaService(
+            ContaRepository contaRepository,
+            AgenciaConfig config,
+            RelogioVetorial relogio,
+            RegistroEventosAplicacao registro) {
+
         this.contaRepository = contaRepository;
         this.config = config;
         this.relogio = relogio;
@@ -26,24 +31,44 @@ public class ContaService {
     }
 
     public Conta criar(long id, String nomeUsuario, BigDecimal saldoInicial) {
+
         validarId(id);
         validarPertencimento(id);
+
         if (nomeUsuario == null || nomeUsuario.isBlank()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "nomeUsuario é obrigatório.");
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "nomeUsuario é obrigatório.");
         }
-        BigDecimal saldo = saldoInicial == null ? BigDecimal.ZERO : saldoInicial;
+
+        BigDecimal saldo =
+                saldoInicial == null ? BigDecimal.ZERO : saldoInicial;
+
         if (saldo.signum() < 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "saldoInicial não pode ser negativo.");
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "saldoInicial não pode ser negativo.");
         }
 
-        Conta nova = new Conta(id, nomeUsuario.trim(), saldo);
+        Conta nova =
+                new Conta(id, nomeUsuario.trim(), saldo);
+
         if (!contaRepository.salvarSeAusente(nova)) {
-            throw new ApiException(HttpStatus.CONFLICT, "Conta já existe.");
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "Conta já existe.");
         }
 
-        int ts = relogio.eventoLocal();
-        registro.registrar("CRIAR_CONTA", ts, Map.of(
-                "id", id, "nomeUsuario", nova.getNomeUsuario(), "saldoInicial", saldo));
+        int[] ts = relogio.eventoLocal();
+
+        registro.registrar(
+                "CRIAR_CONTA",
+                ts,
+                Map.of(
+                        "id", id,
+                        "nomeUsuario", nova.getNomeUsuario(),
+                        "saldoInicial", saldo));
+
         return nova;
     }
 
@@ -53,33 +78,74 @@ public class ContaService {
     }
 
     public Conta depositar(long id, BigDecimal valor) {
+
         validarPertencimento(id);
         validarValorPositivo(valor);
+
         Conta conta = obterOu404(id);
+
         conta.depositar(valor);
-        int ts = relogio.eventoLocal();
-        registro.registrar("DEPOSITO", ts, Map.of("id", id, "valor", valor, "novoSaldo", conta.getSaldo()));
+
+        // Persiste o novo saldo
+        contaRepository.atualizar(conta);
+
+        int[] ts = relogio.eventoLocal();
+
+        registro.registrar(
+                "DEPOSITO",
+                ts,
+                Map.of(
+                        "id", id,
+                        "valor", valor,
+                        "novoSaldo", conta.getSaldo()));
+
         return conta;
     }
 
     public Conta sacar(long id, BigDecimal valor) {
+
         validarPertencimento(id);
         validarValorPositivo(valor);
+
         Conta conta = obterOu404(id);
+
         synchronized (conta) {
+
             if (conta.getSaldo().compareTo(valor) < 0) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Saldo insuficiente.");
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Saldo insuficiente.");
             }
+
             conta.sacar(valor);
+
+            // Persiste o novo saldo
+            contaRepository.atualizar(conta);
         }
-        int ts = relogio.eventoLocal();
-        registro.registrar("SAQUE", ts, Map.of("id", id, "valor", valor, "novoSaldo", conta.getSaldo()));
+
+        int[] ts = relogio.eventoLocal();
+
+        registro.registrar(
+                "SAQUE",
+                ts,
+                Map.of(
+                        "id", id,
+                        "valor", valor,
+                        "novoSaldo", conta.getSaldo()));
+
         return conta;
     }
 
     public Conta obterOu404(long id) {
         return contaRepository.buscarPorId(id)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Conta não encontrada nesta agência."));
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "Conta não encontrada nesta agência."));
+    }
+
+    public void atualizarConta(Conta conta) {
+        contaRepository.atualizar(conta);
     }
 
     public int quantidadeContas() {
@@ -87,19 +153,34 @@ public class ContaService {
     }
 
     public void validarValorPositivo(BigDecimal valor) {
+
         if (valor == null || valor.signum() <= 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "O valor deve ser maior que zero.");
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "O valor deve ser maior que zero.");
         }
     }
 
     private void validarId(long id) {
-        if (id < 0) throw new ApiException(HttpStatus.BAD_REQUEST, "O id da conta não pode ser negativo.");
+
+        if (id < 0) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "O id da conta não pode ser negativo.");
+        }
     }
 
     private void validarPertencimento(long id) {
+
         validarId(id);
-        if (config.agenciaResponsavel(id) != config.getIdAgencia()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Conta " + id + " não pertence a esta agência.");
+
+        if (config.agenciaResponsavel(id)
+                != config.getIdAgencia()) {
+
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Conta " + id +
+                            " não pertence a esta agência.");
         }
     }
 }

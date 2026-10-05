@@ -1,12 +1,23 @@
 # Java / Maven
 agencia/target/
+target/
 *.class
+
+# IntelliJ IDEA
 .idea/
 *.iml
 
-# Logs gerados em tempo de execução
-agencia/data/*.jsonl
+# Dados e logs gerados em tempo de execução
+data/
+agencia/data/
+*.jsonl
 
-# Sistema
+# Variáveis de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Sistema operacional
 Thumbs.db
 desktop.ini
+.DS_Store

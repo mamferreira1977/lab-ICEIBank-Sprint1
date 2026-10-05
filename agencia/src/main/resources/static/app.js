@@ -103,7 +103,7 @@ function renderHistory(eventos){
   $('historyEmpty').classList.add('hidden'); $('historyTableWrap').classList.remove('hidden');
   eventos.forEach(ev=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${ev.timestampLamport}</td><td>${ev.tipo}</td><td>${new Date(ev.horaParede).toLocaleString('pt-BR')}</td><td>${formatarDetalhes(ev.detalhes)}</td>`;
+    tr.innerHTML=`<td>${JSON.stringify(ev.timestampVetorial)}</td><td>${ev.tipo}</td><td>${new Date(ev.horaParede).toLocaleString('pt-BR')}</td><td>${formatarDetalhes(ev.detalhes)}</td>`;
     body.appendChild(tr);
   });
 }

@@ -1,42 +1,54 @@
-# ICEIBank — Sprint 1 em Java / Spring Boot
+# ICEIBank — Sprint 2 (Java / Spring Boot / RabbitMQ)
 
-## Execução atual: um único `IceibankApplication`
+Evolução do Sprint 1 para comunicação indireta com RabbitMQ e relógio vetorial. JWT, frontend e particionamento de contas foram preservados.
 
-A versão atual inicia as três agências com **uma única execução** de `IceibankApplication`. O `main()` cria três contextos Spring Boot independentes: Agência 0 em 4000, Agência 1 em 4001 e Agência 2 em 4002. Cada contexto possui seus próprios beans, mapa de contas e relógio de Lamport. Não é necessário configurar `AGENCIA_ID` no IntelliJ.
+## Novidades da Sprint 2
+- `spring-boot-starter-amqp` e exchange `iceibank.eventos` do tipo `topic`;
+- fila durável `fila-agencia-<id>` por agência, routing key `agencia.<id>.creditar`;
+- mensagens persistentes para transferências remotas;
+- `RelogioVetorial` substitui Lamport;
+- logs JSONL usam `timestampVetorial`;
+- `MesclarLogs` identifica eventos concorrentes;
+- funcionalidade adicional: `fila-auditoria`, vinculada com `#`, grava `data/auditoria-mensageria.jsonl`;
+- cada processo inicia uma única agência, permitindo derrubar/reiniciar a Agência 1 no teste de resiliência.
 
-Abra `http://localhost:4000` após o console confirmar que as três agências foram iniciadas.
+## Pré-requisitos
+Java 17+, Maven e uma instância RabbitMQ/CloudAMQP.
 
-
-Implementação em Java do exercício do Sprint 1: API REST/MVC, partição de contas, relógio lógico de Lamport, transferências locais e entre agências, autenticação JWT, linha do tempo unificada, frontend web e funcionalidade adicional.
-
-## 1. Abrir no IntelliJ
-
-Abra a pasta `iceibank/agencia` como projeto Maven e aguarde a importação das dependências do `pom.xml`.
-
-## 2. Compilar
-
-No terminal, dentro de `iceibank/agencia`:
+## Executar no PowerShell
+Abra três terminais na pasta `agencia`. Em todos, defina sua URL do CloudAMQP:
 
 ```powershell
-mvn clean package
+$env:RABBITMQ_URL="amqps://usuario:senha@host.cloudamqp.com/vhost"
 ```
 
-O JAR será criado em `target/iceibank-agencia-1.0.0.jar`.
-
-## 3. Executar o ICEIBank
-
-Execute **somente uma vez** a classe:
-
-```text
-br.pucminas.iceibank.IceibankApplication
+Terminal 1:
+```powershell
+$env:AGENCIA_ID="0"
+mvn spring-boot:run
+```
+Terminal 2:
+```powershell
+$env:AGENCIA_ID="1"
+mvn spring-boot:run
+```
+Terminal 3:
+```powershell
+$env:AGENCIA_ID="2"
+mvn spring-boot:run
 ```
 
-O próprio `main()` inicializa três contextos Spring Boot independentes. Com `OFFSET=0`:
+Portas: 4000, 4001 e 4002, acrescidas de `OFFSET` se definido. Abra o frontend pela Agência 0.
 
-- Agência 0 → `http://localhost:4000`
-- Agência 1 → `http://localhost:4001`
-- Agência 2 → `http://localhost:4002`
+## Teste de resiliência
+Crie previamente uma conta pertencente à Agência 1. Derrube apenas o terminal da Agência 1, publique uma transferência para ela e depois reinicie-a. A fila permanece no RabbitMQ e entrega a mensagem quando a agência retorna. Como as contas são mantidas em memória, após reiniciar a conta deixa de existir; o consumidor registra `CREDITO_REMOTO_FALHOU`. Isso demonstra a diferença entre durabilidade da mensagem e persistência do estado da aplicação.
 
-Não configure `AGENCIA_ID` e não crie três Run Configurations no IntelliJ. Se estiver em uma máquina compartilhada, defina apenas `OFFSET` antes de iniciar a aplicação.
+## Linha do tempo causal
+Após gerar eventos em agências diferentes:
+```powershell
+mvn -q -DskipTests package
+java -cp target/classes br.pucminas.iceibank.util.MesclarLogs
+```
 
-Ao final da inicialização, o console deve mostrar explicitamente as três agências e as três portas. Abra o frontend em `http://localhost:4000`.
+## Evidências esperadas
+Coloque em `evidencias/sprint2/`: `transferencia-assincrona.png`, `resiliencia-fila.png`, `linha-do-tempo-causal.png` e um print da funcionalidade adicional de auditoria.

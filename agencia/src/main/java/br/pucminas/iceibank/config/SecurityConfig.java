@@ -33,7 +33,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/app.js", "/styles.css", "/favicon.ico", "/error").permitAll()
                         .requestMatchers("/auth/cadastro", "/auth/login").permitAll()
-                        .requestMatchers("/contas/*/creditar-remoto").permitAll()
                         .requestMatchers("/contas/**", "/transferencias", "/status").authenticated()
                         .anyRequest().permitAll()
                 )
