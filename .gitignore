@@ -10,3 +10,20 @@ agencia/data/*.jsonl
 # Sistema
 Thumbs.db
 desktop.ini
+
+# Flutter
+app_mobile/.dart_tool/
+app_mobile/build/
+app_mobile/.idea/
+app_mobile/android/.gradle/
+app_mobile/android/.kotlin/
+app_mobile/*.iml
+app_mobile/.flutter-plugins-dependencies
+
+# Backups locais do aplicativo
+app_mobile/iceibank_backup*.db
+
+# Arquivos sensíveis
+.env
+.env.*
+!.env.example

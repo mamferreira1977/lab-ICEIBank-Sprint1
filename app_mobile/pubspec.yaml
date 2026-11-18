@@ -1,0 +1,16 @@
+name: iceibank_mobile
+description: ICEIBank Sprint 3 mobile
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.3.0
+  shared_preferences: ^2.3.5
+  connectivity_plus: ^6.1.2
+  sqflite: ^2.4.6
+  path: ^1.9.1
+flutter:
+  uses-material-design: true

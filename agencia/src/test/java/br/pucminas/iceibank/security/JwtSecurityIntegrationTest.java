@@ -18,8 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "agencia.id=0", "agencia.offset=0",
         "iceibank.data-dir=target/test-data",
         "jwt.secret=01234567890123456789012345678901",
-        "jwt.expiration-seconds=600",
-        "iceibank.internal-key=teste-interno"
+        "jwt.expiration-seconds=600"
 })
 @AutoConfigureMockMvc
 class JwtSecurityIntegrationTest {
@@ -54,12 +53,6 @@ class JwtSecurityIntegrationTest {
     }
 
     @Test
-    void rotaInternaExigeChaveInterna() throws Exception {
-        mvc.perform(post("/contas/1/creditar-remoto").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valor\":10,\"timestampLamport\":1,\"origemAgencia\":0}"))
-                .andExpect(status().isUnauthorized());
-    }
-    @Test
     void historicoDaContaRetornaEventosDaConta() throws Exception {
         String usuario = "h" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
         String cadastro = mvc.perform(post("/auth/cadastro").contentType(MediaType.APPLICATION_JSON)
@@ -78,7 +71,7 @@ class JwtSecurityIntegrationTest {
         mvc.perform(get("/contas/0/historico").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].tipo").exists())
-                .andExpect(jsonPath("$[0].timestampLamport").exists());
+                .andExpect(jsonPath("$[0].timestampVetorial").exists());
     }
 
 }

@@ -10,8 +10,12 @@ import java.nio.file.Path;
 public class DataPathConfig {
     private final Path pastaDados;
 
-    public DataPathConfig(@Value("${iceibank.data-dir:}") String configurado) {
-        this.pastaDados = resolverPastaDados(configurado);
+    public DataPathConfig(
+            @Value("${iceibank.data-dir:}") String configurado,
+            @Value("${agencia.id:${AGENCIA_ID:0}}") int idAgencia) {
+
+        this.pastaDados = resolverPastaDados(configurado)
+                .resolve("agencia-" + idAgencia);
         try {
             Files.createDirectories(this.pastaDados);
         } catch (Exception e) {

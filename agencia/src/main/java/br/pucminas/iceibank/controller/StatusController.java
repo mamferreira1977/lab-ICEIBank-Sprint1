@@ -4,7 +4,7 @@ import br.pucminas.iceibank.config.AgenciaConfig;
 import br.pucminas.iceibank.repository.UsuarioRepository;
 import br.pucminas.iceibank.service.ContaService;
 import br.pucminas.iceibank.service.RegistroEventosAplicacao;
-import br.pucminas.iceibank.service.RelogioLamportMonitorado;
+import br.pucminas.iceibank.service.RelogioVetorial;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,12 +14,12 @@ import java.util.Map;
 @RestController
 public class StatusController {
     private final AgenciaConfig config;
-    private final RelogioLamportMonitorado relogio;
+    private final RelogioVetorial relogio;
     private final ContaService contaService;
     private final RegistroEventosAplicacao registroEventos;
     private final UsuarioRepository usuarioRepository;
 
-    public StatusController(AgenciaConfig config, RelogioLamportMonitorado relogio, ContaService contaService,
+    public StatusController(AgenciaConfig config, RelogioVetorial relogio, ContaService contaService,
                             RegistroEventosAplicacao registroEventos, UsuarioRepository usuarioRepository) {
         this.config = config;
         this.relogio = relogio;
@@ -32,7 +32,7 @@ public class StatusController {
     public Map<String, Object> status() {
         Map<String, Object> resposta = new LinkedHashMap<>();
         resposta.put("agencia", config.getIdAgencia());
-        resposta.put("relogioLamport", relogio.valorAtual());
+        resposta.put("relogioVetorial", relogio.valorAtual());
         resposta.put("quantidadeContas", contaService.quantidadeContas());
         resposta.put("pastaDados", registroEventos.getPastaDados().toString());
         resposta.put("arquivoEventos", registroEventos.getCaminhoArquivo().toString());
